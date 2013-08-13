@@ -31,13 +31,16 @@ public class TargetAnalyzer {
 		try {
 			image = ImageIO.read(new File(filename));
 			panel = new ImageBackgroundPanel(this);
-			ArrayList<Point> dp = findDarkPoints();
+			ColorManipulator.reduce(image, 5);
+			//ColorManipulator.categorize(image);
+			
+			//ArrayList<Point> dp = findDarkPoints();
 			//dp.for
-			Point center = findCenter();
-			Graphics2D g = (Graphics2D) image.getGraphics();
-			g.setColor(Color.green);
-	        Point c = findCenter();
-	        g.fillOval(c.x, c.y, 10, 10);
+			//Point center = findCenter();
+			//Graphics2D g = (Graphics2D) image.getGraphics();
+			//g.setColor(Color.green);
+	        //Point c = findCenter();
+	        //g.fillOval(c.x, c.y, 10, 10);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -99,7 +102,8 @@ public class TargetAnalyzer {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		TargetAnalyzer t = new TargetAnalyzer("images/taulu1.jpg");
+		//TargetAnalyzer t = new TargetAnalyzer("images/taulu3.png");
+		TargetAnalyzer t = new TargetAnalyzer("images/taulu2.jpg");
 		
 		//1. Create the frame.
 		JFrame frame = new JFrame("FrameDemo");
