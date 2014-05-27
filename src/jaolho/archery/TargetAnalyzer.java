@@ -26,24 +26,37 @@ public class TargetAnalyzer {
 	
 	BufferedImage image;
 	ImageBackgroundPanel panel;
+	float[] hsbArray = new float[3];
+	int[] rgbArray = new int[3];
 	
 	public TargetAnalyzer(String filename) {
 		try {
 			image = ImageIO.read(new File(filename));
 			panel = new ImageBackgroundPanel(this);
-			ColorManipulator.reduce(image, 5);
+			//ColorManipulator.reduce(image, 5);
 			//ColorManipulator.categorize(image);
 			
 			//ArrayList<Point> dp = findDarkPoints();
 			//dp.for
-			//Point center = findCenter();
-			//Graphics2D g = (Graphics2D) image.getGraphics();
-			//g.setColor(Color.green);
-	        //Point c = findCenter();
-	        //g.fillOval(c.x, c.y, 10, 10);
+			Point center = findCenter();
+			Graphics2D g = (Graphics2D) image.getGraphics();
+			g.setColor(Color.green);
+	        Point c = findCenter();
+	        g.fillOval(c.x, c.y, 10, 10);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	private void parseRGB(int rgb) {
+		rgbArray[0] = (rgb >> 16) & 0xFF;
+		rgbArray[1] = (rgb >> 8) & 0xFF;
+		rgbArray[2] = (rgb & 0xFF);
+	}
+	
+	private void parseHSB(int rgb) {
+		parseRGB(rgb);
+		Color.RGBtoHSB(rgbArray[0], rgbArray[1], rgbArray[2], hsbArray);
 	}
 	
 	private ArrayList<Point> findYellowPoints() {
@@ -58,6 +71,32 @@ public class TargetAnalyzer {
 				double rbBalance = (double) r / (double) b;
 				if (!(rgBalance < 0.7 || rgBalance > 1.3 || rbBalance < 2))
 					result.add(new Point(x, y));
+			}
+		}
+		return result;
+	}
+	
+	private ArrayList<Point> findYellowPoints2() {
+		Point p = new Point();
+		int maxR = image.getWidth() / 4;
+		Point center = new Point(image.getWidth() / 2, image.getHeight() / 2);
+		ArrayList<Point> result = new ArrayList<Point>();
+		for (int y = 0; y < image.getHeight(); y++) {
+			for (int x = 0; x < image.getWidth(); x++) {
+				p.x = x;
+				p.y = y;
+				if (center.distance(p) > maxR) { 
+					//image.setRGB(x, y, 0xffff);
+					continue;
+				}
+				parseHSB(image.getRGB(x, y));
+				if (hsbArray[0] > 40/360.0 && hsbArray[0] < 80/360.0 && hsbArray[1] > 0.5) {
+					result.add(new Point(x, y));
+				}
+				else {
+					image.setRGB(x, y, 0);
+				}
+				
 			}
 		}
 		return result;
@@ -84,7 +123,7 @@ public class TargetAnalyzer {
 	}
 	
 	private Point findCenter() {
-		ArrayList<Point> yellowPoints = findYellowPoints();
+		ArrayList<Point> yellowPoints = findYellowPoints2();
 		long xTot = 0;
 		long yTot = 0;
 		for (Point point : yellowPoints) {
@@ -103,7 +142,7 @@ public class TargetAnalyzer {
 	 */
 	public static void main(String[] args) {
 		//TargetAnalyzer t = new TargetAnalyzer("images/taulu3.png");
-		TargetAnalyzer t = new TargetAnalyzer("images/taulu2.jpg");
+		TargetAnalyzer t = new TargetAnalyzer("images/20130530_143304.jpg");
 		
 		//1. Create the frame.
 		JFrame frame = new JFrame("FrameDemo");
